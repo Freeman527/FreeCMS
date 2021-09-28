@@ -5,40 +5,41 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using System;
+using Microsoft.Extensions.Configuration;
 
 namespace FreeCMS.Managers
 {
     public class ContentManager
     {
-        private const string DbServerName = "freecms_db";
-        private const string DbServerAdress = "127.0.0.1";
-        private const string DbServerPort = "5432";
-        private const string DbUserId = "postgres";
-        private const string DbPassword = "adamadam41";
+        private IConfiguration _config;
 
-        public static string AddContent(ContentUnitDTO input)
+        public ContentManager(IConfiguration config)
         {
-            var dbconnection = new NpgsqlConnection($"Server={DbServerAdress};Port={DbServerPort};Database={DbServerName};User Id={DbUserId};Password={DbPassword}");
-            
+            _config = config;
+        }
+
+        public string AddContent(ContentUnitDTO input)
+        {
+            var dbconnection = new NpgsqlConnection($"Server={_config["Database:DatabaseHost"]};Port={_config["Database:DatabasePort"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]}");
+
             string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
             dbconnection.Execute($"INSERT INTO contents VALUES({input.ContentId},'{input.ContentName}','{ContentBodyJson}')");
-            
+
             return "success";
         }
 
-        public static string ReadContent(string ContentName) 
+        public ContentUnitDTO ReadContent(string ContentName)
         {
-            var dbconnection = new NpgsqlConnection($"Server={DbServerAdress};Port={DbServerPort};Database={DbServerName};User Id={DbUserId};Password={DbPassword}");
-            
-            List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\" FROM \"contents\" WHERE \"ContentName\" = '{ContentName}'").ToList();
-            
-            //converting ContentUnit to ConvertUnitDTO
-            ContentUnitDTO itemDTO = new();
-            itemDTO.ContentId = items.First().ContentId;
-            itemDTO.ContentName = items.First().ContentName;
-            itemDTO.ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody);
+            var dbconnection = new NpgsqlConnection($"Server={_config["Database:DatabaseHost"]};Port={_config["Database:DatabasePort"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]}");
 
-            return JsonConvert.SerializeObject(itemDTO);
+            List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\" FROM \"contents\" WHERE \"ContentName\" = '{ContentName}'").ToList();
+
+            return new ContentUnitDTO()
+            {
+                ContentId = items.First().ContentId,
+                ContentName = items.First().ContentName,
+                ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody)
+            };
         }
     }
 }

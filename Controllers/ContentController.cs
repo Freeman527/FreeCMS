@@ -8,16 +8,23 @@ namespace FreeCMS.Controllers
 {
     public class ContentController : Controller 
     {
-        [HttpGet("/api/contents")] 
-        public string ReadContents(string ContentName)
+        private ContentManager _contentManager;
+
+        public ContentController(ContentManager contentManager)
         {
-            return ContentManager.ReadContent(ContentName);
+            _contentManager = contentManager;    
+        }
+
+        [HttpGet("/api/contents")] 
+        public ContentUnitDTO ReadContents(string ContentName)
+        {
+            return _contentManager.ReadContent(ContentName);
         }
 
         [HttpPost("/api/contents")] 
         public string AddContents([FromBody] ContentUnitDTO input) 
         {
-            return ContentManager.AddContent(input);
+            return _contentManager.AddContent(input);
         }
     }
 }
