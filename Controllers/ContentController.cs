@@ -8,7 +8,7 @@ namespace FreeCMS.Controllers
 {
     public class ContentController : Controller 
     {
-        private ContentManager _contentManager;
+        private readonly ContentManager _contentManager;
 
         public ContentController(ContentManager contentManager)
         {
@@ -16,7 +16,7 @@ namespace FreeCMS.Controllers
         }
 
         [HttpGet("/api/contents")] 
-        public ContentUnitDTO ReadContents(string ContentName)
+        public List<ContentUnitDTO> ReadContents(string ContentName)
         {
             return _contentManager.ReadContent(ContentName);
         }
@@ -26,5 +26,17 @@ namespace FreeCMS.Controllers
         {
             return _contentManager.AddContent(input);
         }
+
+        [HttpPut("/api/contents")] 
+        public string UpdateContents([FromBody] ContentUnitDTO input) 
+        {
+            return _contentManager.UpdateContent(input);
+        }
+
+        [HttpDelete("/api/contents")]
+        public string DeleteContent(int ContentId) 
+        {
+            return _contentManager.DeleteContent(ContentId);
+        } 
     }
 }
