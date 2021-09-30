@@ -1,15 +1,16 @@
 using FreeCMS.Entities;
+using FreeCMS.DataAccess;
 using Dapper;
-using Npgsql;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using System;
 using Microsoft.Extensions.Configuration;
+using System.Data.SqlClient;
+
 
 namespace FreeCMS.Managers
 {
-    public class ContentManager
+    public class ContentManager : IContentRepository
     {
         private readonly IConfiguration _config;
 
@@ -19,23 +20,25 @@ namespace FreeCMS.Managers
             _config = config;
         }
 
-        public string AddContent(ContentUnitDTO input)
+        public bool AddContent(ContentUnitDTO input)
         {
-            var dbconnection = new NpgsqlConnection($"Server={_config["Database:DatabaseHost"]};Port={_config["Database:DatabasePort"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]}");
+            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
+            SqlConnection dbconnection = new(connectionstring);
 
             string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
-            dbconnection.Execute($"INSERT INTO contents VALUES({input.ContentId},'{input.ContentName}','{ContentBodyJson}')");
-
-            return "success";
+            dbconnection.Execute($"INSERT INTO contents VALUES({input.ContentId},'{input.ContentName}','{ContentBodyJson}', {input.ContentOwnerId})");
+            
+            return true;
         }
 
-        public List<ContentUnitDTO> ReadContent(string ContentName)
+        public List<ContentUnitDTO> GetContent(string ContentName)
         {
-            var dbconnection = new NpgsqlConnection($"Server={_config["Database:DatabaseHost"]};Port={_config["Database:DatabasePort"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]}");
+            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
+            SqlConnection dbconnection = new(connectionstring);
 
             if(ContentName == null ) 
             {
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\" FROM \"contents\"").ToList();
+                List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\", \"ContentOwnerId\" FROM contents").ToList();
                 List<ContentUnitDTO> itemsDTO = new();
 
                 for (int i = 0; i < items.Count; i++)
@@ -43,7 +46,8 @@ namespace FreeCMS.Managers
                     itemsDTO.Add(new ContentUnitDTO 
                     {
                         ContentId=items[i].ContentId, 
-                        ContentName = items[i].ContentName, 
+                        ContentName = items[i].ContentName,
+                        ContentOwnerId = items[i].ContentOwnerId,
                         ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items[i].ContentBody)
                     });
                 }
@@ -59,6 +63,7 @@ namespace FreeCMS.Managers
                 {
                     ContentId=items.First().ContentId, 
                     ContentName = items.First().ContentName, 
+                    ContentOwnerId = items.First().ContentOwnerId,
                     ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody)
                 });
 
@@ -66,23 +71,25 @@ namespace FreeCMS.Managers
             }
         }
 
-        public string UpdateContent (ContentUnitDTO input)
+        public bool UpdateContent (ContentUnitDTO input)
         {
-            var dbconnection = new NpgsqlConnection($"Server={_config["Database:DatabaseHost"]};Port={_config["Database:DatabasePort"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]}");
+            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
+            SqlConnection dbconnection = new(connectionstring);
 
             string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
             dbconnection.Execute($"UPDATE contents SET \"ContentName\" = '{input.ContentName}', \"ContentBody\" = '{ContentBodyJson}' WHERE \"ContentId\" = {input.ContentId}");
 
-            return $"item updated (id: '{input.ContentId}')";
+            return true;
         }
 
-        public string DeleteContent (int ContentId) 
+        public bool RemoveContent (int ContentId) 
         {
-            var dbconnection = new NpgsqlConnection($"Server={_config["Database:DatabaseHost"]};Port={_config["Database:DatabasePort"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]}");
+            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
+            SqlConnection dbconnection = new(connectionstring);
 
             dbconnection.Execute($"DELETE FROM contents WHERE \"ContentId\" = {ContentId}");
 
-            return $"item deleted (id: {ContentId})";
+            return true;
         }
     }
 }

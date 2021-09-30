@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using FreeCMS.Managers;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 using FreeCMS.Entities;
+using System.Collections.Generic;
 
 namespace FreeCMS.Controllers 
 {
@@ -16,27 +15,27 @@ namespace FreeCMS.Controllers
         }
 
         [HttpGet("/api/contents")] 
-        public List<ContentUnitDTO> ReadContents(string ContentName)
+        public List<ContentUnitDTO> GetContents(string ContentName)
         {
-            return _contentManager.ReadContent(ContentName);
+            return _contentManager.GetContent(ContentName);
         }
 
         [HttpPost("/api/contents")] 
-        public string AddContents([FromBody] ContentUnitDTO input) 
+        public bool AddContents([FromBody] ContentUnitDTO input) 
         {
             return _contentManager.AddContent(input);
         }
 
         [HttpPut("/api/contents")] 
-        public string UpdateContents([FromBody] ContentUnitDTO input) 
+        public bool UpdateContents([FromBody] ContentUnitDTO input) 
         {
             return _contentManager.UpdateContent(input);
         }
 
         [HttpDelete("/api/contents")]
-        public string DeleteContent(int ContentId) 
+        public bool RemoveContent(int ContentId) 
         {
-            return _contentManager.DeleteContent(ContentId);
+            return _contentManager.RemoveContent(ContentId);
         } 
     }
 }
