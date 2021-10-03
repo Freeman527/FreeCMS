@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using FreeCMS.Managers;
-using FreeCMS.Entities;
+using FreeCMS.Shared.Entities;
 using System.Collections.Generic;
 
 namespace FreeCMS.Controllers 

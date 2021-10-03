@@ -1,95 +1,37 @@
-using FreeCMS.Entities;
-using FreeCMS.DataAccess;
-using Dapper;
+using FreeCMS.Shared.Entities;
 using System.Collections.Generic;
+using FreeCMS.DataAccess;
 using System.Linq;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Configuration;
-using System.Data.SqlClient;
-
 
 namespace FreeCMS.Managers
 {
-    public class ContentManager : IContentRepository
+    public class ContentManager
     {
-        private readonly IConfiguration _config;
+        private readonly ContentRepository _contentRepository;
 
-        // Dependency Injection 
-        public ContentManager(IConfiguration config)
+        public ContentManager(ContentRepository contentRepository)
         {
-            _config = config;
+            _contentRepository = contentRepository;
         }
 
         public bool AddContent(ContentUnitDTO input)
         {
-            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
-            SqlConnection dbconnection = new(connectionstring);
-
-            string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
-            dbconnection.Execute($"INSERT INTO contents VALUES({input.ContentId},'{input.ContentName}','{ContentBodyJson}', {input.ContentOwnerId})");
-            
-            return true;
+            return _contentRepository.AddContent(input);
         }
 
         public List<ContentUnitDTO> GetContent(string ContentName)
         {
-            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
-            SqlConnection dbconnection = new(connectionstring);
-
-            if(ContentName == null ) 
-            {
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\", \"ContentOwnerId\" FROM contents").ToList();
-                List<ContentUnitDTO> itemsDTO = new();
-
-                for (int i = 0; i < items.Count; i++)
-                {
-                    itemsDTO.Add(new ContentUnitDTO 
-                    {
-                        ContentId=items[i].ContentId, 
-                        ContentName = items[i].ContentName,
-                        ContentOwnerId = items[i].ContentOwnerId,
-                        ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items[i].ContentBody)
-                    });
-                }
-
-                return itemsDTO;
-            } 
-            else 
-            {
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\" FROM \"contents\" WHERE \"ContentName\" = '{ContentName}'").ToList();
-
-                List<ContentUnitDTO> itemsDTO = new();
-                itemsDTO.Add(new ContentUnitDTO 
-                {
-                    ContentId=items.First().ContentId, 
-                    ContentName = items.First().ContentName, 
-                    ContentOwnerId = items.First().ContentOwnerId,
-                    ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody)
-                });
-
-                return itemsDTO;
-            }
+            return _contentRepository.GetContent(ContentName);
         }
 
         public bool UpdateContent (ContentUnitDTO input)
         {
-            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
-            SqlConnection dbconnection = new(connectionstring);
-
-            string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
-            dbconnection.Execute($"UPDATE contents SET \"ContentName\" = '{input.ContentName}', \"ContentBody\" = '{ContentBodyJson}' WHERE \"ContentId\" = {input.ContentId}");
-
-            return true;
+            return _contentRepository.UpdateContent(input);
         }
 
         public bool RemoveContent (int ContentId) 
         {
-            string connectionstring = $"Server={_config["Database:DatabaseHost"]};Database={_config["Database:DatabaseName"]};User Id={_config["Database:DatabaseUser"]};Password={_config["Database:DatabasePassword"]};";
-            SqlConnection dbconnection = new(connectionstring);
-
-            dbconnection.Execute($"DELETE FROM contents WHERE \"ContentId\" = {ContentId}");
-
-            return true;
+            return _contentRepository.RemoveContent(ContentId);
         }
     }
 }

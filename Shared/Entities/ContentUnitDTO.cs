@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace FreeCMS.Entities
+namespace FreeCMS.Shared.Entities
 {
     public class ContentUnitDTO
     {

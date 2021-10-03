@@ -8,5 +8,8 @@
     <PackageReference Include="Dapper" Version="2.0.90"/>
     <PackageReference Include="Npgsql" Version="6.0.0-rc.1"/>
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3"/>
+    <PackageReference Include="NUnit" Version="3.13.2"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0"/>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.13.0"/>
   </ItemGroup>
 </Project>

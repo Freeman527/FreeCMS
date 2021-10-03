@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using FreeCMS.Entities;
+using FreeCMS.Shared.Entities;
 
 namespace FreeCMS
 {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FreeCMS.DataAccess;
 using FreeCMS.Managers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +29,10 @@ namespace FreeCMS
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ContentManager>();
+            services.AddSingleton<UserManager>();
+
+            services.AddSingleton<ContentRepository>();
+            services.AddSingleton<UserRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
