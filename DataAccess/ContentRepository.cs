@@ -22,50 +22,72 @@ namespace FreeCMS.DataAccess
                                   Password={_config["Database:DatabasePassword"]};";
         }
 
-        public bool AddContent(ContentUnitDTO input)
+        public bool AddContent(ContentUnitDTO input) 
         {
             SqlConnection dbconnection = new(connectionstring);
-
-            string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
-            dbconnection.Execute($"INSERT INTO contents VALUES({input.ContentId},'{input.ContentName}','{ContentBodyJson}', {input.ContentOwnerId})");
             
+            string inputJson = JsonConvert.SerializeObject(input);
+            dbconnection.Execute(@$"INSERT INTO contents SELECT * FROM OPENJSON('{inputJson}') WITH (
+                                    ContentName varchar(128) '$.ContentName',
+                                    ContentBody nvarchar(max) '$.ContentBody' AS JSON,
+                                    ContentOwnerId int '$.ContentOwnerId'
+                                    )");
             return true;
         }
 
-        public List<ContentUnitDTO> GetContent(string ContentName)
+        public List<ContentUnitDTO_output> GetContent(SearchUnit input) 
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            if(ContentName == null) 
+            //only one content that searchable by name
+            if (input.SearchAll == false) 
             {
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\", \"ContentOwnerId\" FROM contents").ToList();
-                List<ContentUnitDTO> itemsDTO = new();
+                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner FROM contents 
+                                                                            INNER JOIN users u on u.UserId = contents.ContentOwnerId 
+                                                                            WHERE ContentName = '{input.ContentName}'").ToList();
+                List<ContentUnitDTO_output> itemsDTO = new();
+
+                if(items.Count > 0)
+                {
+                    itemsDTO.Add(new ContentUnitDTO_output
+                    {
+                        ContentId=items.First().ContentId, 
+                        ContentName = items.First().ContentName, 
+                        ContentOwner = items.First().ContentOwner,
+                        ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody)
+                    });
+
+                    return itemsDTO;
+                } else 
+                {
+                    return null;
+                }
+            } 
+            //SearchAll and other filters
+            else 
+            {
+                string limitString = $"FETCH NEXT {input.Limit} ROWS ONLY";
+
+                if(input.Limit <= 0) 
+                {
+                    limitString = null;
+                }
+
+                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner FROM contents 
+                                                                             INNER JOIN users u on u.UserId = contents.ContentOwnerId 
+                                                                             ORDER BY ContentId OFFSET {input.Offset} ROWS {limitString}").ToList();
+                List<ContentUnitDTO_output> itemsDTO = new();
 
                 for (int i = 0; i < items.Count; i++)
                 {
-                    itemsDTO.Add(new ContentUnitDTO 
+                    itemsDTO.Add(new ContentUnitDTO_output
                     {
                         ContentId=items[i].ContentId, 
                         ContentName = items[i].ContentName,
-                        ContentOwnerId = items[i].ContentOwnerId,
+                        ContentOwner = items[i].ContentOwner,
                         ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items[i].ContentBody)
                     });
                 }
-
-                return itemsDTO;
-            } 
-            else 
-            {
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>($"SELECT \"ContentId\", \"ContentName\", \"ContentBody\" FROM \"contents\" WHERE \"ContentName\" = '{ContentName}'").ToList();
-                List<ContentUnitDTO> itemsDTO = new();
-                
-                itemsDTO.Add(new ContentUnitDTO 
-                {
-                    ContentId=items.First().ContentId, 
-                    ContentName = items.First().ContentName, 
-                    ContentOwnerId = items.First().ContentOwnerId,
-                    ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody)
-                });
 
                 return itemsDTO;
             }
@@ -80,12 +102,12 @@ namespace FreeCMS.DataAccess
             return true;
         }
 
-        public bool UpdateContent(ContentUnitDTO input)
+        public bool UpdateContent(int ContentId ,ContentUnitDTO input)
         {
             SqlConnection dbconnection = new(connectionstring);
 
             string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
-            dbconnection.Execute($"UPDATE contents SET \"ContentName\" = '{input.ContentName}', \"ContentBody\" = '{ContentBodyJson}' WHERE \"ContentId\" = {input.ContentId}");
+            dbconnection.Execute($"UPDATE contents SET \"ContentName\" = '{input.ContentName}', \"ContentBody\" = '{ContentBodyJson}' WHERE \"ContentId\" = {ContentId}");
 
             return true;
         }

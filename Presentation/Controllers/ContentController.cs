@@ -14,10 +14,10 @@ namespace FreeCMS.Controllers
             _contentManager = contentManager;    
         }
 
-        [HttpGet("/api/contents")] 
-        public List<ContentUnitDTO> GetContents(string ContentName)
+        [HttpPost("/api/contents/get")] 
+        public List<ContentUnitDTO_output> GetContents([FromBody] SearchUnit input)
         {
-            return _contentManager.GetContent(ContentName);
+            return _contentManager.GetContent(input);
         }
 
         [HttpPost("/api/contents")] 
@@ -27,9 +27,9 @@ namespace FreeCMS.Controllers
         }
 
         [HttpPut("/api/contents")] 
-        public bool UpdateContents([FromBody] ContentUnitDTO input) 
+        public bool UpdateContents(int ContentId, [FromBody] ContentUnitDTO input) 
         {
-            return _contentManager.UpdateContent(input);
+            return _contentManager.UpdateContent(ContentId ,input);
         }
 
         [HttpDelete("/api/contents")]

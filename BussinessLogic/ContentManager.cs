@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FreeCMS.Managers
 {
-    public class ContentManager
+    public class ContentManager : IContentRepository
     {
         private readonly ContentRepository _contentRepository;
 
@@ -19,14 +19,28 @@ namespace FreeCMS.Managers
             return _contentRepository.AddContent(input);
         }
 
-        public List<ContentUnitDTO> GetContent(string ContentName)
+        public List<ContentUnitDTO_output> GetContent(SearchUnit input)
         {
-            return _contentRepository.GetContent(ContentName);
+            //temporary solution
+            var content = _contentRepository.GetContent(input);
+            if(content == null) 
+            {
+                List<ContentUnitDTO_output> response = new();
+                response.Add(new ContentUnitDTO_output 
+                {
+                    ContentName = "Wrong content name"
+                }); 
+
+                return response;
+            }
+            //
+
+            return _contentRepository.GetContent(input);
         }
 
-        public bool UpdateContent (ContentUnitDTO input)
+        public bool UpdateContent (int ContentId, ContentUnitDTO input)
         {
-            return _contentRepository.UpdateContent(input);
+            return _contentRepository.UpdateContent(ContentId, input);
         }
 
         public bool RemoveContent (int ContentId) 

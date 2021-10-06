@@ -5,6 +5,6 @@ namespace FreeCMS.Shared.Entities
         public int ContentId {get; set;}
         public string ContentName {get; set;}
         public string ContentBody {get; set;}
-        public int ContentOwnerId {get; set;}
+        public string ContentOwner {get; set;}
     }
 }
