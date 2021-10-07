@@ -19,7 +19,7 @@ namespace FreeCMS.Managers
             return _contentRepository.AddContent(input);
         }
 
-        public List<ContentUnitDTO_output> GetContent(SearchUnit input)
+        public List<ContentUnitDTO_output> GetContent(ContentSearchUnit input)
         {
             //temporary solution
             var content = _contentRepository.GetContent(input);

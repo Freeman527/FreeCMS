@@ -1,6 +1,6 @@
 namespace FreeCMS.Shared.Entities
 {
-    public class SearchUnit
+    public class ContentSearchUnit
     {
         public bool SearchAll {get; set;}
         public string ContentName {get; set;}

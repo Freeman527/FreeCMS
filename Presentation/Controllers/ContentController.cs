@@ -14,8 +14,8 @@ namespace FreeCMS.Controllers
             _contentManager = contentManager;    
         }
 
-        [HttpPost("/api/contents/get")] 
-        public List<ContentUnitDTO_output> GetContents([FromBody] SearchUnit input)
+        [HttpGet("/api/contents/get")] 
+        public List<ContentUnitDTO_output> GetContents([FromQuery] ContentSearchUnit input)
         {
             return _contentManager.GetContent(input);
         }

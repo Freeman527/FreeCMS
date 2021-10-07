@@ -8,6 +8,6 @@ namespace FreeCMS.DataAccess
         bool AddContent(ContentUnitDTO input);
         bool UpdateContent(int ContentId, ContentUnitDTO input);
         bool RemoveContent(int ContentId);
-        List<ContentUnitDTO_output> GetContent(SearchUnit input);
+        List<ContentUnitDTO_output> GetContent(ContentSearchUnit input);
     }
 }

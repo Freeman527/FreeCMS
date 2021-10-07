@@ -35,7 +35,7 @@ namespace FreeCMS.DataAccess
             return true;
         }
 
-        public List<ContentUnitDTO_output> GetContent(SearchUnit input) 
+        public List<ContentUnitDTO_output> GetContent(ContentSearchUnit input)
         {
             SqlConnection dbconnection = new(connectionstring);
 
