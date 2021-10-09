@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace FreeCMS.DataAccess
         private readonly IConfiguration _config;
         private readonly string connectionstring;
 
-        public ContentRepository (IConfiguration config) 
+        public ContentRepository(IConfiguration config)
         {
             _config = config;
             connectionstring = @$"Server={_config["Database:DatabaseHost"]};
@@ -22,58 +23,79 @@ namespace FreeCMS.DataAccess
                                   Password={_config["Database:DatabasePassword"]};";
         }
 
-        public bool AddContent(ContentUnitDTO input) 
+        public bool AddContent(ContentUnitDTO input)
         {
             SqlConnection dbconnection = new(connectionstring);
-            
-            string inputJson = JsonConvert.SerializeObject(input);
-            dbconnection.Execute(@$"INSERT INTO contents SELECT * FROM OPENJSON('{inputJson}') WITH (
-                                    ContentName varchar(128) '$.ContentName',
-                                    ContentBody nvarchar(max) '$.ContentBody' AS JSON,
-                                    ContentOwnerId int '$.ContentOwnerId'
-                                    )");
+
+            string inputJson = JsonConvert.SerializeObject(input.ContentBody);
+            dbconnection.Execute(@$"INSERT INTO contents (ContentName, ContentBody, ContentOwnerId, Date)
+                                    VALUES('{input.ContentName}', '{inputJson}', {input.ContentOwnerId}, {DateTimeOffset.Now.ToUnixTimeSeconds()})");
             return true;
         }
+
+        // public bool AddContent(ContentUnitDTO input)
+        // {
+        //     SqlConnection dbconnection = new(connectionstring);
+
+        //     string inputJson = JsonConvert.SerializeObject(input);
+        //     dbconnection.Execute(@$"INSERT INTO contents SELECT * FROM OPENJSON('{inputJson}') WITH (
+        //                             ContentName varchar(128) '$.ContentName',
+        //                             ContentBody nvarchar(max) '$.ContentBody' AS JSON,
+        //                             ContentOwnerId int '$.ContentOwnerId'
+        //                             )");
+        //     return true;
+        // }
 
         public List<ContentUnitDTO_output> GetContent(ContentSearchUnit input)
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            //only one content that searchable by name
-            if (input.SearchAll == false) 
+            //unix timestamp converter
+            static DateTime UnixTimeStampToDateTime(uint unixTimeStamp)
             {
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner FROM contents 
+                // Unix timestamp is seconds past epoch
+                DateTime dtDateTime = new(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+                dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+                return dtDateTime;
+            }
+
+            //only one content that searchable by name
+            if (input.SearchAll == false)
+            {
+                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner, Date FROM contents 
                                                                             INNER JOIN users u on u.UserId = contents.ContentOwnerId 
                                                                             WHERE ContentName = '{input.ContentName}'").ToList();
                 List<ContentUnitDTO_output> itemsDTO = new();
 
-                if(items.Count > 0)
+                if (items.Count > 0)
                 {
                     itemsDTO.Add(new ContentUnitDTO_output
                     {
-                        ContentId=items.First().ContentId, 
-                        ContentName = items.First().ContentName, 
+                        ContentId = items.First().ContentId,
+                        ContentName = items.First().ContentName,
                         ContentOwner = items.First().ContentOwner,
+                        Date = UnixTimeStampToDateTime(items.First().Date),
                         ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody)
                     });
 
                     return itemsDTO;
-                } else 
+                }
+                else
                 {
                     return null;
                 }
-            } 
+            }
             //SearchAll and other filters
-            else 
+            else
             {
                 string limitString = $"FETCH NEXT {input.Limit} ROWS ONLY";
 
-                if(input.Limit <= 0) 
+                if (input.Limit <= 0)
                 {
                     limitString = null;
                 }
 
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner FROM contents 
+                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner, Date FROM contents 
                                                                              INNER JOIN users u on u.UserId = contents.ContentOwnerId 
                                                                              ORDER BY ContentId OFFSET {input.Offset} ROWS {limitString}").ToList();
                 List<ContentUnitDTO_output> itemsDTO = new();
@@ -82,9 +104,10 @@ namespace FreeCMS.DataAccess
                 {
                     itemsDTO.Add(new ContentUnitDTO_output
                     {
-                        ContentId=items[i].ContentId, 
+                        ContentId = items[i].ContentId,
                         ContentName = items[i].ContentName,
                         ContentOwner = items[i].ContentOwner,
+                        Date = UnixTimeStampToDateTime(items[i].Date),
                         ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items[i].ContentBody)
                     });
                 }
@@ -102,7 +125,7 @@ namespace FreeCMS.DataAccess
             return true;
         }
 
-        public bool UpdateContent(int ContentId ,ContentUnitDTO input)
+        public bool UpdateContent(int ContentId, ContentUnitDTO input)
         {
             SqlConnection dbconnection = new(connectionstring);
 

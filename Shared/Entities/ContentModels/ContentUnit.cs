@@ -6,5 +6,6 @@ namespace FreeCMS.Shared.Entities
         public string ContentName {get; set;}
         public string ContentBody {get; set;}
         public string ContentOwner {get; set;}
+        public uint Date {get; set;}
     }
 }

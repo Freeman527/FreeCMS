@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace FreeCMS.Shared.Entities
@@ -8,5 +9,6 @@ namespace FreeCMS.Shared.Entities
         public string ContentName {get; set;}
         public Dictionary<string,string> ContentBody {get; set;}
         public string ContentOwner {get; set;}
+        public DateTime Date {get; set;}
     }
 }

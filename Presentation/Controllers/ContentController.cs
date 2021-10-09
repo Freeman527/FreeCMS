@@ -36,6 +36,6 @@ namespace FreeCMS.Controllers
         public bool RemoveContent(int ContentId) 
         {
             return _contentManager.RemoveContent(ContentId);
-        } 
+        }
     }
 }
