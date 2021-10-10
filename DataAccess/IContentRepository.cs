@@ -5,8 +5,8 @@ namespace FreeCMS.DataAccess
 {
     public interface IContentRepository
     {
-        bool AddContent(ContentUnitDTO input);
-        bool UpdateContent(int ContentId, ContentUnitDTO input);
+        bool AddContent(string contentBody, string contentName, int ownerId);
+        bool UpdateContent(int contentId, string newContentBody);
         bool RemoveContent(int ContentId);
         List<ContentUnitDTO_output> GetContent(ContentSearchUnit input);
     }

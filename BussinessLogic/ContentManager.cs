@@ -2,50 +2,42 @@ using FreeCMS.Shared.Entities;
 using System.Collections.Generic;
 using FreeCMS.DataAccess;
 using System.Linq;
+using System.Security.Claims;
 
-namespace FreeCMS.Managers
+namespace FreeCMS.BussinessLogic
 {
-    public class ContentManager : IContentRepository
+    public class ContentService : IContentService
     {
         private readonly ContentRepository _contentRepository;
 
-        public ContentManager(ContentRepository contentRepository)
+        public ContentService(ContentRepository contentRepository)
         {
             _contentRepository = contentRepository;
         }
 
-        public bool AddContent(ContentUnitDTO input)
+        public bool AddContent(string contentName, string contentBody, ClaimsPrincipal user)
         {
-            return _contentRepository.AddContent(input);
+            throw new System.NotImplementedException();
         }
 
-        public List<ContentUnitDTO_output> GetContent(ContentSearchUnit input)
+        public string GetContent(int contentId)
         {
-            //temporary solution
-            var content = _contentRepository.GetContent(input);
-            if(content == null) 
-            {
-                List<ContentUnitDTO_output> response = new();
-                response.Add(new ContentUnitDTO_output 
-                {
-                    ContentName = "Wrong content name"
-                }); 
-
-                return response;
-            }
-            //
-
-            return _contentRepository.GetContent(input);
+            throw new System.NotImplementedException();
         }
 
-        public bool UpdateContent (int ContentId, ContentUnitDTO input)
+        public List<string> GetContents(int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
         {
-            return _contentRepository.UpdateContent(ContentId, input);
+            throw new System.NotImplementedException();
         }
 
-        public bool RemoveContent (int ContentId) 
+        public bool RemoveContent(int contentId)
         {
-            return _contentRepository.RemoveContent(ContentId);
+            throw new System.NotImplementedException();
+        }
+
+        public bool UpdateContent(int contentId, string contentBody)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

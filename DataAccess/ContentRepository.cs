@@ -33,6 +33,11 @@ namespace FreeCMS.DataAccess
             return true;
         }
 
+        public bool AddContent(string contentBody, string contentName, int ownerId)
+        {
+            throw new NotImplementedException();
+        }
+
         // public bool AddContent(ContentUnitDTO input)
         // {
         //     SqlConnection dbconnection = new(connectionstring);
@@ -133,6 +138,11 @@ namespace FreeCMS.DataAccess
             dbconnection.Execute($"UPDATE contents SET \"ContentName\" = '{input.ContentName}', \"ContentBody\" = '{ContentBodyJson}' WHERE \"ContentId\" = {ContentId}");
 
             return true;
+        }
+
+        public bool UpdateContent(int contentId, string newContentBody)
+        {
+            throw new NotImplementedException();
         }
     }
 }
