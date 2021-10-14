@@ -25,12 +25,26 @@ namespace FreeCMS.DataAccess
                                   Password={_config["Database:DatabasePassword"]};";
         }
 
-        public bool AddContent(string contentName, string contentBody, ClaimsPrincipal user)
+        public bool AddContent(string contentType, string contentBody, ClaimsPrincipal user)
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            dbconnection.Execute(@$"INSERT INTO contents (ContentName, ContentBody, Date)
-                                    VALUES('{contentName}', '{contentBody}', {DateTimeOffset.Now.ToUnixTimeSeconds()})");
+            try
+            {
+                 var jsonString = JsonConvert.DeserializeObject(contentBody);
+            }
+            catch
+            {
+                return false;                
+            }
+
+            if(contentType == null) 
+            {
+                return false;
+            }
+
+            dbconnection.Execute(@$"INSERT INTO contents (ContentType, ContentBody, Date)
+                                    VALUES('{contentType}', '{contentBody}', {DateTimeOffset.Now.ToUnixTimeSeconds()})");
 
             return true;
         }
@@ -44,16 +58,22 @@ namespace FreeCMS.DataAccess
 
             contentDTO.Add(new ContentUnitDTO_output {
                 ContentId = queryContent.First().ContentId,
-                ContentName = queryContent.First().ContentName,
-                ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent.First().ContentBody)
+                ContentType = queryContent.First().ContentType,
+                ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent.First().ContentBody),
+                Date = UnixTimeStampToDateTimeConverter.UnixTimeStampToDateTime(queryContent.First().Date)
             });
 
             return JsonConvert.SerializeObject(contentDTO.First());
         }
 
-        public List<ContentUnitDTO_output> GetContents(int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
+        public List<ContentUnitDTO_output> GetContents(string contentType, int offset, int pageSize, string orderField, OrderDirection orderDirection)
         {
             SqlConnection dbconnection = new(connectionstring);
+
+            if(orderField == null) 
+            {
+                orderDirection = OrderDirection.None;
+            }
 
             string limitString = $"FETCH NEXT {pageSize} ROWS ONLY";
             if (pageSize <= 0)
@@ -61,7 +81,17 @@ namespace FreeCMS.DataAccess
                 limitString = null;
             }
 
-            List<ContentUnit> queryContent = dbconnection.Query<ContentUnit>($"SELECT * FROM contents ORDER BY ContentId OFFSET {offset} ROWS {limitString}").ToList();
+            List<ContentUnit> queryContent = new();
+            if(contentType == null) 
+            {
+                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents ORDER BY ContentId 
+                                                                  OFFSET {offset} ROWS {limitString}").ToList();
+            } else 
+            {
+                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents WHERE ContentType = '{contentType}' 
+                                                                  ORDER BY ContentId OFFSET {offset} ROWS {limitString}").ToList();
+            }
+
             List<ContentUnitDTO_output> contentDTO = new();
             Dictionary<int, object> contentFieldFetchers = new();
             Dictionary<int, object> orderedFieldDict = new();
@@ -70,11 +100,12 @@ namespace FreeCMS.DataAccess
             {
                 contentDTO.Add(new ContentUnitDTO_output {
                     ContentId = queryContent[i].ContentId,
-                    ContentName = queryContent[i].ContentName,
-                    ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent[i].ContentBody)
+                    ContentType = queryContent[i].ContentType,
+                    ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent[i].ContentBody),
+                    Date = UnixTimeStampToDateTimeConverter.UnixTimeStampToDateTime(queryContent[i].Date)
                 });
 
-                if (contentDTO[i].ContentBody.ContainsKey(orderField))
+                if (orderField != null && contentDTO[i].ContentBody.ContainsKey(orderField))
                 {
                     contentFieldFetchers.Add(contentDTO[i].ContentId, contentDTO[i].ContentBody[orderField]);
                 }
@@ -128,6 +159,15 @@ namespace FreeCMS.DataAccess
         public bool UpdateContent(int contentId, string newContentBody)
         {
             SqlConnection dbconnection = new(connectionstring);
+
+            try
+            {
+                 var jsonString = JsonConvert.DeserializeObject(newContentBody);
+            }
+            catch
+            {
+                return false;                
+            }
 
             dbconnection.Execute($"UPDATE contents SET ContentBody = '{newContentBody}' WHERE ContentId = {contentId}");
 

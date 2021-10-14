@@ -17,11 +17,22 @@ namespace FreeCMS.Controllers
         }
 
         [HttpGet("/api/contents/gets")]
-        public List<ContentUnitDTO_output> GetContents(string orderField = "", int offset = 0, int paging = int.MaxValue)
+        public List<ContentUnitDTO_output> GetContents(string contentType, string orderField, int offset, int paging)
         {
             //for example orderField = age desc
-            string orderDirectionStr = orderField.Split(' ')[1];
-            string orderFieldName = orderField.Split(' ')[0];
+            string orderFieldName, orderDirectionStr;
+
+            if (orderField == null)
+            {
+                orderFieldName = null;
+                orderDirectionStr = null;
+            }
+            else
+            {
+                orderFieldName = orderField.Split(' ')[0];
+                orderDirectionStr = orderField.Split(' ')[1];
+            }
+
             var orderDirection = OrderDirection.None;
 
             if (orderDirectionStr == "desc")
@@ -37,8 +48,7 @@ namespace FreeCMS.Controllers
                 orderDirection = OrderDirection.None;
             }
 
-
-            return _contentService.GetContents(offset, paging, orderFieldName, orderDirection);
+            return _contentService.GetContents(contentType, offset, paging, orderFieldName, orderDirection);
         }
 
         [HttpGet("/api/contents/get")]
@@ -48,9 +58,9 @@ namespace FreeCMS.Controllers
         }
 
         [HttpPost("/api/contents")]
-        public bool AddContents(string contentName, [FromBody] string input)
+        public bool AddContents(string contentType, [FromBody] string input)
         {
-            return _contentService.AddContent(contentName, input, null);
+            return _contentService.AddContent(contentType, input, null);
         }
 
         [HttpPut("/api/contents")]

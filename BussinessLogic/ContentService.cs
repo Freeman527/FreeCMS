@@ -15,9 +15,9 @@ namespace FreeCMS.BussinessLogic
             _contentRepository = contentRepository;
         }
 
-        public bool AddContent(string contentName, string contentBody, ClaimsPrincipal user)
+        public bool AddContent(string contentType, string contentBody, ClaimsPrincipal user)
         {
-            return _contentRepository.AddContent(contentName, contentBody, user);
+            return _contentRepository.AddContent(contentType, contentBody, user);
         }
 
         public string GetContent(int contentId)
@@ -25,9 +25,9 @@ namespace FreeCMS.BussinessLogic
             return _contentRepository.GetContent(contentId);
         }
 
-        public List<ContentUnitDTO_output> GetContents(int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
+        public List<ContentUnitDTO_output> GetContents(string contentType, int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
         {
-            return _contentRepository.GetContents(offset, pageSize, orderField, orderDirection);
+            return _contentRepository.GetContents(contentType ,offset, pageSize, orderField, orderDirection);
         }
 
         public bool RemoveContent(int contentId)
