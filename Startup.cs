@@ -30,8 +30,8 @@ namespace FreeCMS
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IContentService, ContentService>();
-            services.AddScoped<IContentRepository, ContentRepository>();
+            services.AddSingleton<ContentService>();
+            services.AddSingleton<ContentRepository>();
 
             services.AddSingleton<UserManager>();
             services.AddSingleton<UserRepository>();

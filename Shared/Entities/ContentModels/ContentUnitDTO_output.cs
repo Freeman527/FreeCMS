@@ -7,7 +7,7 @@ namespace FreeCMS.Shared.Entities
     {
         public int ContentId {get; set;}
         public string ContentName {get; set;}
-        public Dictionary<string,string> ContentBody {get; set;}
+        public Dictionary<string,object> ContentBody {get; set;}
         public string ContentOwner {get; set;}
         public DateTime Date {get; set;}
     }

@@ -3,6 +3,7 @@ using FreeCMS.Managers;
 using FreeCMS.Shared.Entities;
 using System.Collections.Generic;
 using FreeCMS.BussinessLogic;
+using FreeCMS.DataAccess;
 
 namespace FreeCMS.Controllers
 {
@@ -15,11 +16,12 @@ namespace FreeCMS.Controllers
             _contentService = contentManager;
         }
 
-        [HttpGet("/api/contents/get")]
-        public List<string> GetContents(string orderField = "", int offset = 0, int paging = int.MaxValue)
+        [HttpGet("/api/contents/gets")]
+        public List<ContentUnitDTO_output> GetContents(string orderField = "", int offset = 0, int paging = int.MaxValue)
         {
             //for example orderField = age desc
             string orderDirectionStr = orderField.Split(' ')[1];
+            string orderFieldName = orderField.Split(' ')[0];
             var orderDirection = OrderDirection.None;
 
             if (orderDirectionStr == "desc")
@@ -30,8 +32,19 @@ namespace FreeCMS.Controllers
             {
                 orderDirection = OrderDirection.Ascending;
             }
+            else if(orderDirectionStr == "null") 
+            {
+                orderDirection = OrderDirection.None;
+            }
 
-            return _contentService.GetContents(offset, paging, orderField, orderDirection);
+
+            return _contentService.GetContents(offset, paging, orderFieldName, orderDirection);
+        }
+
+        [HttpGet("/api/contents/get")]
+        public string GetContent(int contentId) 
+        {
+            return _contentService.GetContent(contentId);
         }
 
         [HttpPost("/api/contents")]
@@ -41,15 +54,15 @@ namespace FreeCMS.Controllers
         }
 
         [HttpPut("/api/contents")]
-        public bool UpdateContents(int ContentId, [FromBody] string newBody)
+        public bool UpdateContents(int contentId, [FromBody] string newBody)
         {
-            return _contentService.UpdateContent(ContentId, newBody);
+            return _contentService.UpdateContent(contentId, newBody);
         }
 
         [HttpDelete("/api/contents")]
-        public bool RemoveContent(int ContentId)
+        public bool RemoveContent(int contentId)
         {
-            return _contentService.RemoveContent(ContentId);
+            return _contentService.RemoveContent(contentId);
         }
     }
 }

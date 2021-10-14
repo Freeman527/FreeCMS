@@ -17,27 +17,27 @@ namespace FreeCMS.BussinessLogic
 
         public bool AddContent(string contentName, string contentBody, ClaimsPrincipal user)
         {
-            throw new System.NotImplementedException();
+            return _contentRepository.AddContent(contentName, contentBody, user);
         }
 
         public string GetContent(int contentId)
         {
-            throw new System.NotImplementedException();
+            return _contentRepository.GetContent(contentId);
         }
 
-        public List<string> GetContents(int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
+        public List<ContentUnitDTO_output> GetContents(int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
         {
-            throw new System.NotImplementedException();
+            return _contentRepository.GetContents(offset, pageSize, orderField, orderDirection);
         }
 
         public bool RemoveContent(int contentId)
         {
-            throw new System.NotImplementedException();
+            return _contentRepository.RemoveContent(contentId);
         }
 
         public bool UpdateContent(int contentId, string contentBody)
         {
-            throw new System.NotImplementedException();
+            return _contentRepository.UpdateContent(contentId, contentBody);
         }
     }
 }

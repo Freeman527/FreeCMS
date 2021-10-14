@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Claims;
 using Dapper;
+using FreeCMS.Presentation.Formatters;
 using FreeCMS.Shared.Entities;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -23,126 +25,113 @@ namespace FreeCMS.DataAccess
                                   Password={_config["Database:DatabasePassword"]};";
         }
 
-        public bool AddContent(ContentUnitDTO input)
+        public bool AddContent(string contentName, string contentBody, ClaimsPrincipal user)
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            string inputJson = JsonConvert.SerializeObject(input.ContentBody);
-            dbconnection.Execute(@$"INSERT INTO contents (ContentName, ContentBody, ContentOwnerId, Date)
-                                    VALUES('{input.ContentName}', '{inputJson}', {input.ContentOwnerId}, {DateTimeOffset.Now.ToUnixTimeSeconds()})");
-            return true;
-        }
-
-        public bool AddContent(string contentBody, string contentName, int ownerId)
-        {
-            throw new NotImplementedException();
-        }
-
-        // public bool AddContent(ContentUnitDTO input)
-        // {
-        //     SqlConnection dbconnection = new(connectionstring);
-
-        //     string inputJson = JsonConvert.SerializeObject(input);
-        //     dbconnection.Execute(@$"INSERT INTO contents SELECT * FROM OPENJSON('{inputJson}') WITH (
-        //                             ContentName varchar(128) '$.ContentName',
-        //                             ContentBody nvarchar(max) '$.ContentBody' AS JSON,
-        //                             ContentOwnerId int '$.ContentOwnerId'
-        //                             )");
-        //     return true;
-        // }
-
-        public List<ContentUnitDTO_output> GetContent(ContentSearchUnit input)
-        {
-            SqlConnection dbconnection = new(connectionstring);
-
-            //unix timestamp converter
-            static DateTime UnixTimeStampToDateTime(uint unixTimeStamp)
-            {
-                // Unix timestamp is seconds past epoch
-                DateTime dtDateTime = new(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-                dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-                return dtDateTime;
-            }
-
-            //only one content that searchable by name
-            if (input.SearchAll == false)
-            {
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner, Date FROM contents 
-                                                                            INNER JOIN users u on u.UserId = contents.ContentOwnerId 
-                                                                            WHERE ContentName = '{input.ContentName}'").ToList();
-                List<ContentUnitDTO_output> itemsDTO = new();
-
-                if (items.Count > 0)
-                {
-                    itemsDTO.Add(new ContentUnitDTO_output
-                    {
-                        ContentId = items.First().ContentId,
-                        ContentName = items.First().ContentName,
-                        ContentOwner = items.First().ContentOwner,
-                        Date = UnixTimeStampToDateTime(items.First().Date),
-                        ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items.First().ContentBody)
-                    });
-
-                    return itemsDTO;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            //SearchAll and other filters
-            else
-            {
-                string limitString = $"FETCH NEXT {input.Limit} ROWS ONLY";
-
-                if (input.Limit <= 0)
-                {
-                    limitString = null;
-                }
-
-                List<ContentUnit> items = dbconnection.Query<ContentUnit>(@$"SELECT ContentId, ContentName, ContentBody, Username as ContentOwner, Date FROM contents 
-                                                                             INNER JOIN users u on u.UserId = contents.ContentOwnerId 
-                                                                             ORDER BY ContentId OFFSET {input.Offset} ROWS {limitString}").ToList();
-                List<ContentUnitDTO_output> itemsDTO = new();
-
-                for (int i = 0; i < items.Count; i++)
-                {
-                    itemsDTO.Add(new ContentUnitDTO_output
-                    {
-                        ContentId = items[i].ContentId,
-                        ContentName = items[i].ContentName,
-                        ContentOwner = items[i].ContentOwner,
-                        Date = UnixTimeStampToDateTime(items[i].Date),
-                        ContentBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(items[i].ContentBody)
-                    });
-                }
-
-                return itemsDTO;
-            }
-        }
-
-        public bool RemoveContent(int ContentId)
-        {
-            SqlConnection dbconnection = new(connectionstring);
-
-            dbconnection.Execute($"DELETE FROM contents WHERE \"ContentId\" = {ContentId}");
+            dbconnection.Execute(@$"INSERT INTO contents (ContentName, ContentBody, Date)
+                                    VALUES('{contentName}', '{contentBody}', {DateTimeOffset.Now.ToUnixTimeSeconds()})");
 
             return true;
         }
 
-        public bool UpdateContent(int ContentId, ContentUnitDTO input)
+        public string GetContent(int contentId) 
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            string ContentBodyJson = JsonConvert.SerializeObject(input.ContentBody);
-            dbconnection.Execute($"UPDATE contents SET \"ContentName\" = '{input.ContentName}', \"ContentBody\" = '{ContentBodyJson}' WHERE \"ContentId\" = {ContentId}");
+            List<ContentUnit> queryContent = dbconnection.Query<ContentUnit>($"SELECT * FROM contents WHERE ContentId = {contentId}").ToList();
+            List<ContentUnitDTO_output> contentDTO = new();
+
+            contentDTO.Add(new ContentUnitDTO_output {
+                ContentId = queryContent.First().ContentId,
+                ContentName = queryContent.First().ContentName,
+                ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent.First().ContentBody)
+            });
+
+            return JsonConvert.SerializeObject(contentDTO.First());
+        }
+
+        public List<ContentUnitDTO_output> GetContents(int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
+        {
+            SqlConnection dbconnection = new(connectionstring);
+
+            string limitString = $"FETCH NEXT {pageSize} ROWS ONLY";
+            if (pageSize <= 0)
+            {
+                limitString = null;
+            }
+
+            List<ContentUnit> queryContent = dbconnection.Query<ContentUnit>($"SELECT * FROM contents ORDER BY ContentId OFFSET {offset} ROWS {limitString}").ToList();
+            List<ContentUnitDTO_output> contentDTO = new();
+            Dictionary<int, object> contentFieldFetchers = new();
+            Dictionary<int, object> orderedFieldDict = new();
+
+            for (int i = 0; i < queryContent.Count; i++)
+            {
+                contentDTO.Add(new ContentUnitDTO_output {
+                    ContentId = queryContent[i].ContentId,
+                    ContentName = queryContent[i].ContentName,
+                    ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent[i].ContentBody)
+                });
+
+                if (contentDTO[i].ContentBody.ContainsKey(orderField))
+                {
+                    contentFieldFetchers.Add(contentDTO[i].ContentId, contentDTO[i].ContentBody[orderField]);
+                }
+            }
+
+            //ascending
+            if(orderDirection == OrderDirection.Ascending) 
+            {
+                foreach (KeyValuePair<int, object> field in contentFieldFetchers.OrderBy(key => key.Value))
+                {
+                    orderedFieldDict.Add(field.Key, field.Value);
+                }
+            }
+
+            //descending
+            if(orderDirection == OrderDirection.Descending) 
+            {
+                foreach (KeyValuePair<int, object> field in contentFieldFetchers.OrderByDescending(key => key.Value))
+                {
+                    orderedFieldDict.Add(field.Key, field.Value);
+                }
+            }
+
+            //none
+            if(orderDirection == OrderDirection.None)
+            {
+                return contentDTO;
+            }
+
+            List<ContentUnitDTO_output> orderedContentDTO = new();
+
+            int index;
+            for (int i = 0; i < orderedFieldDict.Count; i++)
+            {
+                index = contentDTO.FindIndex(c => c.ContentId == orderedFieldDict.ElementAt(i).Key);
+                orderedContentDTO.Add(contentDTO[index]);
+            }
+
+            return orderedContentDTO;
+        }
+
+        public bool RemoveContent(int contentId)
+        {
+            SqlConnection dbconnection = new(connectionstring);
+
+            dbconnection.Execute($"DELETE FROM contents WHERE \"ContentId\" = {contentId}");
 
             return true;
         }
 
         public bool UpdateContent(int contentId, string newContentBody)
         {
-            throw new NotImplementedException();
+            SqlConnection dbconnection = new(connectionstring);
+
+            dbconnection.Execute($"UPDATE contents SET ContentBody = '{newContentBody}' WHERE ContentId = {contentId}");
+
+            return true;
         }
     }
 }
