@@ -13,6 +13,8 @@ namespace FreeCMS.DataAccess
 {
     public class ContentRepository : IContentRepository
     {
+
+        //test 
         private readonly IConfiguration _config;
         private readonly string connectionstring;
 
