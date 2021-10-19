@@ -75,21 +75,14 @@ namespace FreeCMS.DataAccess
                 orderDirection = OrderDirection.None;
             }
 
-            string limitString = $"FETCH NEXT {pageSize} ROWS ONLY";
-            if (pageSize <= 0)
-            {
-                limitString = null;
-            }
-
             List<ContentUnit> queryContent = new();
             if(contentType == null) 
             {
-                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents ORDER BY ContentId 
-                                                                  OFFSET {offset} ROWS {limitString}").ToList();
-            } else 
+                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents ORDER BY ContentId").ToList();
+            } 
+            else 
             {
-                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents WHERE ContentType = '{contentType}' 
-                                                                  ORDER BY ContentId OFFSET {offset} ROWS {limitString}").ToList();
+                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents WHERE ContentType = '{contentType}' ORDER BY ContentId").ToList();
             }
 
             List<ContentUnitDTO_output> contentDTO = new();
@@ -132,6 +125,15 @@ namespace FreeCMS.DataAccess
             //none
             if(orderDirection == OrderDirection.None)
             {
+                //offset process
+                contentDTO.RemoveRange(0, offset);
+
+                //limit process
+                if(contentDTO.Count >= pageSize) 
+                {
+                    contentDTO.RemoveRange(pageSize, contentDTO.Count-pageSize);
+                }
+
                 return contentDTO;
             }
 
@@ -142,6 +144,15 @@ namespace FreeCMS.DataAccess
             {
                 index = contentDTO.FindIndex(c => c.ContentId == orderedFieldDict.ElementAt(i).Key);
                 orderedContentDTO.Add(contentDTO[index]);
+            }
+
+            //offset process
+            orderedContentDTO.RemoveRange(0, offset);
+
+            //limit process
+            if (contentDTO.Count >= pageSize)
+            {
+                contentDTO.RemoveRange(pageSize, contentDTO.Count - pageSize);
             }
 
             return orderedContentDTO;

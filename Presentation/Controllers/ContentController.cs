@@ -11,13 +11,13 @@ namespace FreeCMS.Controllers
     {
         private readonly IContentService _contentService;
 
-        public ContentController(ContentService contentManager)
+        public ContentController(ContentService contentService)
         {
-            _contentService = contentManager;
+            _contentService = contentService;
         }
 
-        [HttpGet("/api/contents/gets")]
-        public List<ContentUnitDTO_output> GetContents(string contentType, string orderField, int offset, int paging)
+        [HttpGet("/api/contents/get/{contentType}")]
+        public IActionResult GetContents(string contentType, string orderField, int offset, int paging = int.MaxValue)
         {
             //for example orderField = age desc
             string orderFieldName, orderDirectionStr;
@@ -48,28 +48,28 @@ namespace FreeCMS.Controllers
                 orderDirection = OrderDirection.None;
             }
 
-            return _contentService.GetContents(contentType, offset, paging, orderFieldName, orderDirection);
+            return Ok(_contentService.GetContents(contentType, offset, paging, orderFieldName, orderDirection));
         }
 
-        [HttpGet("/api/contents/get")]
+        [HttpGet("/api/content/get")]
         public string GetContent(int contentId) 
         {
             return _contentService.GetContent(contentId);
         }
 
-        [HttpPost("/api/contents")]
+        [HttpPost("/api/content/add")]
         public bool AddContents(string contentType, [FromBody] string input)
         {
             return _contentService.AddContent(contentType, input, null);
         }
 
-        [HttpPut("/api/contents")]
+        [HttpPut("/api/content/update")]
         public bool UpdateContents(int contentId, [FromBody] string newBody)
         {
             return _contentService.UpdateContent(contentId, newBody);
         }
 
-        [HttpDelete("/api/contents")]
+        [HttpDelete("/api/content/delete")]
         public bool RemoveContent(int contentId)
         {
             return _contentService.RemoveContent(contentId);

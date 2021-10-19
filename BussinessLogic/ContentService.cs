@@ -25,9 +25,9 @@ namespace FreeCMS.BussinessLogic
             return _contentRepository.GetContent(contentId);
         }
 
-        public List<ContentUnitDTO_output> GetContents(string contentType, int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None)
+        public List<ContentUnitDTO_output> GetContents(string contentType, int offset, int pageSize, string orderField, OrderDirection orderDirection)
         {
-            return _contentRepository.GetContents(contentType ,offset, pageSize, orderField, orderDirection);
+            return _contentRepository.GetContents(contentType, offset, pageSize, orderField, orderDirection);
         }
 
         public bool RemoveContent(int contentId)
