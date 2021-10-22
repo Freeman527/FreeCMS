@@ -4,6 +4,7 @@ using FreeCMS.Shared.Entities;
 using System.Collections.Generic;
 using FreeCMS.BussinessLogic;
 using FreeCMS.DataAccess;
+using System;
 
 namespace FreeCMS.Controllers
 {
@@ -17,38 +18,16 @@ namespace FreeCMS.Controllers
         }
 
         [HttpGet("/api/contents/get/{contentType}")]
-        public IActionResult GetContents(string contentType, string orderField, int offset, int paging = int.MaxValue)
+        public IActionResult GetContents(string contentType, string orderField, int offset, int pageSize = int.MaxValue)
         {
-            //for example orderField = age desc
-            string orderFieldName, orderDirectionStr;
-
-            if (orderField == null)
+            try
             {
-                orderFieldName = null;
-                orderDirectionStr = null;
+                return Ok(_contentService.GetContents(contentType, offset, pageSize, orderField));
             }
-            else
+            catch (Exception e)
             {
-                orderFieldName = orderField.Split(' ')[0];
-                orderDirectionStr = orderField.Split(' ')[1];
+                return BadRequest(e.Message);
             }
-
-            var orderDirection = OrderDirection.None;
-
-            if (orderDirectionStr == "desc")
-            {
-                orderDirection = OrderDirection.Descending;
-            }
-            else if (orderDirectionStr == "asc")
-            {
-                orderDirection = OrderDirection.Ascending;
-            }
-            else if(orderDirectionStr == "null") 
-            {
-                orderDirection = OrderDirection.None;
-            }
-
-            return Ok(_contentService.GetContents(contentType, offset, paging, orderFieldName, orderDirection));
         }
 
         [HttpGet("/api/content/get")]
@@ -58,15 +37,29 @@ namespace FreeCMS.Controllers
         }
 
         [HttpPost("/api/content/add")]
-        public bool AddContents(string contentType, [FromBody] string input)
+        public IActionResult AddContents(string contentType, [FromBody] string input)
         {
-            return _contentService.AddContent(contentType, input, null);
+            try
+            {
+                return Ok(_contentService.AddContent(contentType, input, null));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPut("/api/content/update")]
-        public bool UpdateContents(int contentId, [FromBody] string newBody)
+        public IActionResult UpdateContents(int contentId, [FromBody] string newBody)
         {
-            return _contentService.UpdateContent(contentId, newBody);
+            try
+            {
+                return Ok(_contentService.UpdateContent(contentId, newBody));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpDelete("/api/content/delete")]

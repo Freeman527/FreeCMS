@@ -10,6 +10,6 @@ namespace FreeCMS.BussinessLogic
         bool RemoveContent(int contentId);
         bool UpdateContent(int contentId, string contentBody);
         string GetContent(int contentId);
-        List<ContentUnitDTO_output> GetContents(string contentType, int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None);
+        List<ContentUnitDTO_output> GetContents(string contentType, int offset = 0, int pageSize = int.MaxValue, string orderField = "");
     }
 }

@@ -13,8 +13,6 @@ namespace FreeCMS.DataAccess
 {
     public class ContentRepository : IContentRepository
     {
-
-        //test 
         private readonly IConfiguration _config;
         private readonly string connectionstring;
 
@@ -37,7 +35,7 @@ namespace FreeCMS.DataAccess
             }
             catch
             {
-                return false;                
+                throw new Exception("Request body is not in a valid json format.");      
             }
 
             if(contentType == null) 
@@ -70,6 +68,11 @@ namespace FreeCMS.DataAccess
 
         public List<ContentUnitDTO_output> GetContents(string contentType, int offset, int pageSize, string orderField, OrderDirection orderDirection)
         {
+            if (offset < 0)
+            {
+                throw new Exception("ERROR: Offset value can not take negative numbers.");
+            }
+
             SqlConnection dbconnection = new(connectionstring);
 
             if(orderField == null) 
@@ -152,9 +155,9 @@ namespace FreeCMS.DataAccess
             orderedContentDTO.RemoveRange(0, offset);
 
             //limit process
-            if (contentDTO.Count >= pageSize)
+            if (orderedContentDTO.Count >= pageSize)
             {
-                contentDTO.RemoveRange(pageSize, contentDTO.Count - pageSize);
+                orderedContentDTO.RemoveRange(pageSize, orderedContentDTO.Count - pageSize);
             }
 
             return orderedContentDTO;
@@ -179,7 +182,7 @@ namespace FreeCMS.DataAccess
             }
             catch
             {
-                return false;                
+                throw new Exception("Request body is not in a valid json format.");      
             }
 
             dbconnection.Execute($"UPDATE contents SET ContentBody = '{newContentBody}' WHERE ContentId = {contentId}");

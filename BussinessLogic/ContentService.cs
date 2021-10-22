@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FreeCMS.DataAccess;
 using System.Linq;
 using System.Security.Claims;
+using System;
 
 namespace FreeCMS.BussinessLogic
 {
@@ -25,9 +26,38 @@ namespace FreeCMS.BussinessLogic
             return _contentRepository.GetContent(contentId);
         }
 
-        public List<ContentUnitDTO_output> GetContents(string contentType, int offset, int pageSize, string orderField, OrderDirection orderDirection)
+        public List<ContentUnitDTO_output> GetContents(string contentType, int offset, int pageSize, string rawOrderFieldText)
         {
-            return _contentRepository.GetContents(contentType, offset, pageSize, orderField, orderDirection);
+            //for example orderField = age desc
+            string orderFieldName, orderDirectionStr;
+
+            if (rawOrderFieldText == null)
+            {
+                orderFieldName = null;
+                orderDirectionStr = null;
+            }
+            else
+            {
+                orderFieldName = rawOrderFieldText.Split(' ')[0];
+                orderDirectionStr = rawOrderFieldText.Split(' ')[1];
+            }
+
+            OrderDirection orderDirection;
+
+            if (orderDirectionStr == "desc")
+            {
+                orderDirection = OrderDirection.Descending;
+            }
+            else if (orderDirectionStr == "asc")
+            {
+                orderDirection = OrderDirection.Ascending;
+            }
+            else
+            {
+                orderDirection = OrderDirection.None;
+            }
+
+            return _contentRepository.GetContents(contentType, offset, pageSize, orderFieldName, orderDirection);
         }
 
         public bool RemoveContent(int contentId)
