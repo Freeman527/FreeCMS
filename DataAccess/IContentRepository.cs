@@ -7,8 +7,8 @@ namespace FreeCMS.DataAccess
     public interface IContentRepository
     {
         bool AddContent(string contentType, string contentBody, ClaimsPrincipal user);
-        bool UpdateContent(int contentId, string newContentBody);
-        bool RemoveContent(int contentId);
+        string UpdateContent(int contentId, string newContentBody);
+        string RemoveContent(int contentId);
         string GetContent(int contentId);
         List<ContentUnitDTO_output> GetContents(string contentType, int offset = 0, int pageSize = int.MaxValue, string orderField = "", OrderDirection orderDirection = OrderDirection.None);
     }

@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using FreeCMS.Managers;
-using FreeCMS.Shared.Entities;
-using System.Collections.Generic;
 using FreeCMS.BussinessLogic;
-using FreeCMS.DataAccess;
 using System;
 
 namespace FreeCMS.Controllers
@@ -31,9 +27,16 @@ namespace FreeCMS.Controllers
         }
 
         [HttpGet("/api/content/get")]
-        public string GetContent(int contentId) 
+        public IActionResult GetContent(int contentId)
         {
-            return _contentService.GetContent(contentId);
+            try
+            {
+                return Ok(_contentService.GetContent(contentId));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPost("/api/content/add")]
@@ -63,9 +66,16 @@ namespace FreeCMS.Controllers
         }
 
         [HttpDelete("/api/content/delete")]
-        public bool RemoveContent(int contentId)
+        public IActionResult RemoveContent(int contentId)
         {
-            return _contentService.RemoveContent(contentId);
+            try
+            {
+                return Ok(_contentService.RemoveContent(contentId));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

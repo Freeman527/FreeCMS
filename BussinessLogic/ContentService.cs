@@ -1,9 +1,7 @@
 using FreeCMS.Shared.Entities;
 using System.Collections.Generic;
 using FreeCMS.DataAccess;
-using System.Linq;
 using System.Security.Claims;
-using System;
 
 namespace FreeCMS.BussinessLogic
 {
@@ -60,12 +58,12 @@ namespace FreeCMS.BussinessLogic
             return _contentRepository.GetContents(contentType, offset, pageSize, orderFieldName, orderDirection);
         }
 
-        public bool RemoveContent(int contentId)
+        public string RemoveContent(int contentId)
         {
             return _contentRepository.RemoveContent(contentId);
         }
 
-        public bool UpdateContent(int contentId, string contentBody)
+        public string UpdateContent(int contentId, string contentBody)
         {
             return _contentRepository.UpdateContent(contentId, contentBody);
         }

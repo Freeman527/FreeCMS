@@ -38,7 +38,7 @@ namespace FreeCMS.DataAccess
                 throw new Exception("Request body is not in a valid json format.");      
             }
 
-            if(contentType == null) 
+            if(contentType == null || contentBody == "[]" || contentBody == "{}") 
             {
                 return false;
             }
@@ -81,13 +81,10 @@ namespace FreeCMS.DataAccess
             }
 
             List<ContentUnit> queryContent = new();
-            if(contentType == null) 
+            queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents WHERE ContentType = '{contentType}' ORDER BY ContentId").ToList();
+            if(queryContent.Count == 0) 
             {
-                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents ORDER BY ContentId").ToList();
-            } 
-            else 
-            {
-                queryContent = dbconnection.Query<ContentUnit>(@$"SELECT * FROM contents WHERE ContentType = '{contentType}' ORDER BY ContentId").ToList();
+                throw new Exception("ERROR: Content not found.");
             }
 
             List<ContentUnitDTO_output> contentDTO = new();
@@ -163,16 +160,24 @@ namespace FreeCMS.DataAccess
             return orderedContentDTO;
         }
 
-        public bool RemoveContent(int contentId)
+        public string RemoveContent(int contentId)
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            dbconnection.Execute($"DELETE FROM contents WHERE \"ContentId\" = {contentId}");
+            List<ContentUnit> queryContent = dbconnection.Query<ContentUnit>($"SELECT * FROM contents WHERE \"ContentId\" = {contentId}").ToList();
 
-            return true;
+            if (queryContent.Count == 0) 
+            {
+                throw new Exception("Content doesn't exist.");
+            } 
+            else 
+            {
+                dbconnection.Execute($"DELETE FROM contents WHERE \"ContentId\" = {contentId}");
+                return "Item deleted successfuly.";
+            }
         }
 
-        public bool UpdateContent(int contentId, string newContentBody)
+        public string UpdateContent(int contentId, string newContentBody)
         {
             SqlConnection dbconnection = new(connectionstring);
 
@@ -185,9 +190,17 @@ namespace FreeCMS.DataAccess
                 throw new Exception("Request body is not in a valid json format.");      
             }
 
-            dbconnection.Execute($"UPDATE contents SET ContentBody = '{newContentBody}' WHERE ContentId = {contentId}");
+            List<ContentUnit> queryContent = dbconnection.Query<ContentUnit>($"SELECT * FROM contents WHERE \"ContentId\" = {contentId}").ToList();
 
-            return true;
+            if (queryContent.Count == 0)
+            {
+                throw new Exception("Content doesn't exist.");
+            }
+            else
+            {
+                dbconnection.Execute($"UPDATE contents SET ContentBody = '{newContentBody}' WHERE ContentId = {contentId}");
+                return @"Content updated successfuly.";
+            }
         }
     }
 }
