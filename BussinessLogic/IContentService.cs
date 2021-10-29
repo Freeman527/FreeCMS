@@ -6,9 +6,9 @@ namespace FreeCMS.BussinessLogic
 {
     public interface IContentService
     {
-        bool AddContent(string contentType, string contentBody, ClaimsPrincipal user);
+        bool PostContent(string contentType, string contentBody, ClaimsPrincipal user);
         string RemoveContent(int contentId);
-        string UpdateContent(int contentId, string contentBody);
+        string PutContent(int contentId, string contentBody);
         string GetContent(int contentId);
         List<ContentUnitDTO_output> GetContents(string contentType, int offset = 0, int pageSize = int.MaxValue, string orderField = "");
     }

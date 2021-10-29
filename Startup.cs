@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text;
 using FreeCMS.DataAccess;
 using FreeCMS.Managers;
 using Microsoft.AspNetCore.Builder;
@@ -15,6 +16,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using FreeCMS.Presentation.Formatters;
 using FreeCMS.BussinessLogic;
+using FreeCMS.Shared.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FreeCMS
 {
@@ -36,6 +40,25 @@ namespace FreeCMS
             services.AddSingleton<UserManager>();
             services.AddSingleton<UserRepository>();
 
+            services.AddAuthentication(x => 
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x => 
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.Audience = Configuration["JwtConfiguration:Audience"];
+                x.TokenValidationParameters = new TokenValidationParameters 
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JwtConfiguration:TokenKey"])),
+                };
+            });
+
+            services.AddSingleton<JwtAuthenticateManager>();
+
             services.AddControllers(opt =>
             {
                 opt.InputFormatters.Insert(0, new RawJsonBodyInputFormatter());
@@ -44,6 +67,31 @@ namespace FreeCMS
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "FreeCMS", Version = "v1" });
+                
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
+                {
+                    In=ParameterLocation.Header,
+                    Description="Insert a token before authorize.",
+                    Name="Authorization",
+                    Type=SecuritySchemeType.Http,
+                    BearerFormat="JWT",
+                    Scheme="bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference 
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
             });
         }
 
@@ -57,6 +105,8 @@ namespace FreeCMS
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

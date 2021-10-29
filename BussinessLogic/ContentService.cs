@@ -14,9 +14,9 @@ namespace FreeCMS.BussinessLogic
             _contentRepository = contentRepository;
         }
 
-        public bool AddContent(string contentType, string contentBody, ClaimsPrincipal user)
+        public bool PostContent(string contentType, string contentBody, ClaimsPrincipal user)
         {
-            return _contentRepository.AddContent(contentType, contentBody, user);
+            return _contentRepository.PostContent(contentType, contentBody, user);
         }
 
         public string GetContent(int contentId)
@@ -63,9 +63,9 @@ namespace FreeCMS.BussinessLogic
             return _contentRepository.RemoveContent(contentId);
         }
 
-        public string UpdateContent(int contentId, string contentBody)
+        public string PutContent(int contentId, string contentBody)
         {
-            return _contentRepository.UpdateContent(contentId, contentBody);
+            return _contentRepository.PutContent(contentId, contentBody);
         }
     }
 }

@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using FreeCMS.Managers;
 using FreeCMS.Shared.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FreeCMS.Presentation.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
         
@@ -15,10 +18,22 @@ namespace FreeCMS.Presentation.Controllers
             _userManager = userManager;
         }
 
+        [AllowAnonymous]
+        [HttpPost("/api/users/authentication")]
+        public IActionResult Authentication(string username, string password) 
+        {
+            var token = _userManager.Authentication(username, password);
+            if(token == null) 
+            {
+                return Unauthorized();
+            }
+            return Ok(token);
+        }
+
         [HttpGet("/api/users")]
         public List<UserUnit> GetUsers() 
         {
-            return null;
+            return _userManager.GetUsers();
         }
 
         [HttpPost("/api/users/register")]

@@ -25,7 +25,7 @@ namespace FreeCMS.DataAccess
                                   Password={_config["Database:DatabasePassword"]};";
         }
 
-        public bool AddContent(string contentType, string contentBody, ClaimsPrincipal user)
+        public bool PostContent(string contentType, string contentBody, ClaimsPrincipal user)
         {
             SqlConnection dbconnection = new(connectionstring);
 
@@ -177,7 +177,7 @@ namespace FreeCMS.DataAccess
             }
         }
 
-        public string UpdateContent(int contentId, string newContentBody)
+        public string PutContent(int contentId, string newContentBody)
         {
             SqlConnection dbconnection = new(connectionstring);
 

@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using FreeCMS.BussinessLogic;
 using System;
 
 namespace FreeCMS.Controllers
 {
+    [Authorize]
     public class ContentController : Controller
     {
         private readonly IContentService _contentService;
@@ -13,6 +16,20 @@ namespace FreeCMS.Controllers
             _contentService = contentService;
         }
 
+        [HttpPost("/api/content/add")]
+        public IActionResult PostContent(string contentType, [FromBody] string input)
+        {
+            try
+            {
+                return Ok(_contentService.PostContent(contentType, input, null));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [AllowAnonymous]
         [HttpGet("/api/contents/get/{contentType}")]
         public IActionResult GetContents(string contentType, string orderField, int offset, int pageSize = int.MaxValue)
         {
@@ -26,6 +43,7 @@ namespace FreeCMS.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("/api/content/get")]
         public IActionResult GetContent(int contentId)
         {
@@ -39,25 +57,12 @@ namespace FreeCMS.Controllers
             }
         }
 
-        [HttpPost("/api/content/add")]
-        public IActionResult AddContents(string contentType, [FromBody] string input)
-        {
-            try
-            {
-                return Ok(_contentService.AddContent(contentType, input, null));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
-
         [HttpPut("/api/content/update")]
-        public IActionResult UpdateContents(int contentId, [FromBody] string newBody)
+        public IActionResult PutContent(int contentId, [FromBody] string newBody)
         {
             try
             {
-                return Ok(_contentService.UpdateContent(contentId, newBody));
+                return Ok(_contentService.PutContent(contentId, newBody));
             }
             catch (Exception e)
             {
