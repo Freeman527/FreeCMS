@@ -4,6 +4,7 @@ using FreeCMS.Managers;
 using FreeCMS.Shared.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FreeCMS.Presentation.Controllers
 {
@@ -36,10 +37,11 @@ namespace FreeCMS.Presentation.Controllers
             return _userManager.GetUsers();
         }
 
+        [AllowAnonymous]
         [HttpPost("/api/users/register")]
-        public bool RegisterUser(int UserId, string Username, string Password, int UserClaimId) 
+        public bool RegisterUser(int UserId, string Username, string Password) 
         {
-            return _userManager.RegisterUser(UserId, Username, Password, UserClaimId);
+            return _userManager.RegisterUser(UserId, Username, Password, 2);
         }
 
         [HttpPut("/api/users")]

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using FreeCMS.BussinessLogic;
 using System;
+using System.Linq;
 
 namespace FreeCMS.Controllers
 {
@@ -16,7 +17,7 @@ namespace FreeCMS.Controllers
             _contentService = contentService;
         }
 
-        [HttpPost("/api/content/add")]
+        [HttpPost("/api/v1/content/{contentType}")]
         public IActionResult PostContent(string contentType, [FromBody] string input)
         {
             try
@@ -30,12 +31,12 @@ namespace FreeCMS.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("/api/contents/get/{contentType}")]
+        [HttpGet("/api/v1/contents/{contentType}")]
         public IActionResult GetContents(string contentType, string orderField, int offset, int pageSize = int.MaxValue)
         {
             try
             {
-                return Ok(_contentService.GetContents(contentType, offset, pageSize, orderField));
+                return Ok(_contentService.GetContents(contentType, offset, pageSize, orderField).Select(x => x.ContentBody));
             }
             catch (Exception e)
             {
@@ -44,12 +45,12 @@ namespace FreeCMS.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("/api/content/get")]
+        [HttpGet("/api/v1/content/{contentId}")]
         public IActionResult GetContent(int contentId)
         {
             try
             {
-                return Ok(_contentService.GetContent(contentId));
+                return Ok(_contentService.GetContent(contentId).ContentBody);
             }
             catch (Exception e)
             {
@@ -57,7 +58,7 @@ namespace FreeCMS.Controllers
             }
         }
 
-        [HttpPut("/api/content/update")]
+        [HttpPut("/api/v1/content/{contentId}/{contentType}")]
         public IActionResult PutContent(int contentId, [FromBody] string newBody)
         {
             try
@@ -70,7 +71,7 @@ namespace FreeCMS.Controllers
             }
         }
 
-        [HttpDelete("/api/content/delete")]
+        [HttpDelete("/api/v1/content/{contentId}")]
         public IActionResult RemoveContent(int contentId)
         {
             try

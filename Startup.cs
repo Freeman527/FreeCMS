@@ -53,7 +53,7 @@ namespace FreeCMS
                 {
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JwtConfiguration:TokenKey"])),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtConfiguration:TokenKey"])),
                 };
             });
 

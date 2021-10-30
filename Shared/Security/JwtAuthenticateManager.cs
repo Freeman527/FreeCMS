@@ -20,7 +20,7 @@ namespace FreeCMS.Shared.Security
         public string Authenticate(string username, string password)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenKey = Encoding.ASCII.GetBytes(_config["JwtConfiguration:TokenKey"]);
+            var tokenKey = Encoding.UTF8.GetBytes(_config["JwtConfiguration:TokenKey"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[] 

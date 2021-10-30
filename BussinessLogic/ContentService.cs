@@ -19,7 +19,7 @@ namespace FreeCMS.BussinessLogic
             return _contentRepository.PostContent(contentType, contentBody, user);
         }
 
-        public string GetContent(int contentId)
+        public ContentUnitDTO_output GetContent(int contentId)
         {
             return _contentRepository.GetContent(contentId);
         }

@@ -39,7 +39,7 @@ namespace FreeCMS.DataAccess
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            dbconnection.Execute($"INSERT INTO users VALUES({UserId}, '{Username}', '{Password}', {UserClaimId})");
+            dbconnection.Execute($"INSERT INTO users VALUES({UserId}, '{Username}', '{Sha1Hasher.Hash(Password)}', {UserClaimId})");
             return true;
         }
 
@@ -63,11 +63,19 @@ namespace FreeCMS.DataAccess
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            List<UserUnit> usercreds = dbconnection.Query<UserUnit>($"SELECT Username, UserPassword as Password FROM users WHERE Username = '{username}' and UserPassword = '{password}'").ToList();
+            List<UserUnit> usercreds = dbconnection.Query<UserUnit>($"SELECT Username, UserPassword as Password FROM users WHERE Username = '{username}'").ToList();
 
             if (usercreds.Any()) 
             {
-                return _jwtAuthManager.Authenticate(usercreds.First().Username, usercreds.First().Password);
+                //sha1 validate
+                if(Sha1Hasher.Hash(password) == usercreds.First().Password) 
+                {
+                    return _jwtAuthManager.Authenticate(usercreds.First().Username, usercreds.First().Password);
+                }
+                else
+                {
+                    return null;
+                }
             } 
             else 
             {

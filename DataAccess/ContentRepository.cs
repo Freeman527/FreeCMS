@@ -6,6 +6,7 @@ using System.Security.Claims;
 using Dapper;
 using FreeCMS.Presentation.Formatters;
 using FreeCMS.Shared.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -49,21 +50,20 @@ namespace FreeCMS.DataAccess
             return true;
         }
 
-        public string GetContent(int contentId) 
+        public ContentUnitDTO_output GetContent(int contentId) 
         {
             SqlConnection dbconnection = new(connectionstring);
 
             List<ContentUnit> queryContent = dbconnection.Query<ContentUnit>($"SELECT * FROM contents WHERE ContentId = {contentId}").ToList();
-            List<ContentUnitDTO_output> contentDTO = new();
+            ContentUnitDTO_output contentDTO = new();
 
-            contentDTO.Add(new ContentUnitDTO_output {
-                ContentId = queryContent.First().ContentId,
-                ContentType = queryContent.First().ContentType,
-                ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent.First().ContentBody),
-                Date = UnixTimeStampToDateTimeConverter.UnixTimeStampToDateTime(queryContent.First().Date)
-            });
+            contentDTO.ContentId = queryContent.First().ContentId;
+            contentDTO.ContentType = queryContent.First().ContentType;
+            contentDTO.ContentBody = JsonConvert.DeserializeObject<Dictionary<string, object>>(queryContent.First().ContentBody);
+            contentDTO.ContentOwner = queryContent.First().ContentOwner;
+            contentDTO.Date = UnixTimeStampToDateTimeConverter.UnixTimeStampToDateTime(queryContent.First().Date);
 
-            return JsonConvert.SerializeObject(contentDTO.First());
+            return contentDTO;
         }
 
         public List<ContentUnitDTO_output> GetContents(string contentType, int offset, int pageSize, string orderField, OrderDirection orderDirection)
