@@ -6,7 +6,7 @@ namespace FreeCMS.DataAccess
 {
     public interface IContentRepository
     {
-        bool PostContent(string contentType, string contentBody, ClaimsPrincipal user);
+        string PostContent(string contentType, string contentBody, ClaimsPrincipal user);
         string PutContent(int contentId, string newContentBody);
         string RemoveContent(int contentId);
         ContentUnitDTO_output GetContent(int contentId);

@@ -12,18 +12,18 @@ namespace FreeCMS.Presentation.Controllers
     public class UserController : Controller
     {
         
-        private readonly UserManager _userManager;
+        private readonly UserService _userManager;
 
-        public UserController(UserManager userManager)
+        public UserController(UserService userManager)
         {
             _userManager = userManager;
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/users/authentication")]
-        public IActionResult Authentication(string username, string password) 
+        [HttpPost("/api/users/authentication/{Username}")]
+        public IActionResult Authentication(string Username, string Password) 
         {
-            var token = _userManager.Authentication(username, password);
+            var token = _userManager.Authentication(Username, Password);
             if(token == null) 
             {
                 return Unauthorized();
@@ -38,19 +38,19 @@ namespace FreeCMS.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/users/register")]
-        public bool RegisterUser(int UserId, string Username, string Password) 
+        [HttpPost("/api/users/register/{Username}")]
+        public bool RegisterUser(string Username, string Password) 
         {
-            return _userManager.RegisterUser(UserId, Username, Password, 2);
+            return _userManager.RegisterUser(Username, Password, 2);
         }
 
-        [HttpPut("/api/users")]
+        [HttpPut("/api/users/{Username}")]
         public bool UpdateUser(int UserId, string Username, string Password) 
         {
             return _userManager.UpdateUser(UserId, Username, Password);
         }
 
-        [HttpDelete("/api/users")]
+        [HttpDelete("/api/users{UserId}")]
         public bool RemoveUser(int UserId) 
         {
             return _userManager.RemoveUser(UserId);

@@ -4,18 +4,18 @@ using FreeCMS.Shared.Entities;
 
 namespace FreeCMS.Managers
 {
-    public class UserManager
+    public class UserService
     {
         private readonly UserRepository _userRepository;
 
-        public UserManager(UserRepository userRepository)
+        public UserService(UserRepository userRepository)
         {
             _userRepository = userRepository;
         }
 
-        public string Authentication(string username, string password) 
+        public string Authentication(string Username, string Password) 
         {
-            return _userRepository.Authentication(username, password);
+            return _userRepository.Authentication(Username, Password);
         }
 
         public List<UserUnit> GetUsers() 
@@ -23,9 +23,9 @@ namespace FreeCMS.Managers
             return _userRepository.GetUsers();
         }
 
-        public bool RegisterUser(int UserId, string Username, string Password, int UserClaimId) 
+        public bool RegisterUser(string Username, string Password, int UserRoleId) 
         {
-            return _userRepository.RegisterUser(UserId, Username, Password, UserClaimId);
+            return _userRepository.RegisterUser(Username, Password, UserRoleId);
         }
 
         public bool RemoveUser(int UserId) 

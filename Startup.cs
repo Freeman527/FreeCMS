@@ -37,19 +37,19 @@ namespace FreeCMS
             services.AddSingleton<ContentService>();
             services.AddSingleton<ContentRepository>();
 
-            services.AddSingleton<UserManager>();
+            services.AddSingleton<UserService>();
             services.AddSingleton<UserRepository>();
 
-            services.AddAuthentication(x => 
+            services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x => 
+            }).AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
                 x.Audience = Configuration["JwtConfiguration:Audience"];
-                x.TokenValidationParameters = new TokenValidationParameters 
+                x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
@@ -67,15 +67,15 @@ namespace FreeCMS
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "FreeCMS", Version = "v1" });
-                
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    In=ParameterLocation.Header,
-                    Description="Insert a token before authorize.",
-                    Name="Authorization",
-                    Type=SecuritySchemeType.Http,
-                    BearerFormat="JWT",
-                    Scheme="bearer"
+                    In = ParameterLocation.Header,
+                    Description = "Insert a token before authorize.",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "bearer"
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -83,7 +83,7 @@ namespace FreeCMS
                     {
                         new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference 
+                            Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
@@ -98,7 +98,12 @@ namespace FreeCMS
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "FreeCMS v1"));
+            app.UseSwaggerUI(c => 
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "FreeCMS");
+                c.RoutePrefix = "FreeCMS";
+            });
+
             app.UseDeveloperExceptionPage();
 
             app.UseSwagger();

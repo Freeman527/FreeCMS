@@ -6,7 +6,7 @@ namespace FreeCMS.BussinessLogic
 {
     public interface IContentService
     {
-        bool PostContent(string contentType, string contentBody, ClaimsPrincipal user);
+        string PostContent(string contentType, string contentBody, ClaimsPrincipal user);
         string RemoveContent(int contentId);
         string PutContent(int contentId, string contentBody);
         ContentUnitDTO_output GetContent(int contentId);

@@ -26,7 +26,7 @@ namespace FreeCMS.DataAccess
                                   Password={_config["Database:DatabasePassword"]};";
         }
 
-        public bool PostContent(string contentType, string contentBody, ClaimsPrincipal user)
+        public string PostContent(string contentType, string contentBody, ClaimsPrincipal user)
         {
             SqlConnection dbconnection = new(connectionstring);
 
@@ -41,13 +41,13 @@ namespace FreeCMS.DataAccess
 
             if(contentType == null || contentBody == "[]" || contentBody == "{}") 
             {
-                return false;
+                throw new Exception("Content can not create with empty json format.");
             }
 
             dbconnection.Execute(@$"INSERT INTO contents (ContentType, ContentBody, Date)
                                     VALUES('{contentType}', '{contentBody}', {DateTimeOffset.Now.ToUnixTimeSeconds()})");
 
-            return true;
+            return @$"Content '{contentType}' created successfully";
         }
 
         public ContentUnitDTO_output GetContent(int contentId) 

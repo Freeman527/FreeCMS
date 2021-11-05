@@ -35,11 +35,11 @@ namespace FreeCMS.DataAccess
             return users;
         }
 
-        public bool RegisterUser(int UserId ,string Username, string Password, int UserClaimId)
+        public bool RegisterUser(string Username, string Password, int UserRoleId)
         {
             SqlConnection dbconnection = new(connectionstring);
 
-            dbconnection.Execute($"INSERT INTO users VALUES({UserId}, '{Username}', '{Sha1Hasher.Hash(Password)}', {UserClaimId})");
+            dbconnection.Execute($"INSERT INTO users (Username, UserPassword, UserRoleId) VALUES('{Username}', '{Sha1Hasher.Hash(Password)}', {UserRoleId})");
             return true;
         }
 

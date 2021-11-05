@@ -14,7 +14,7 @@ namespace FreeCMS.BussinessLogic
             _contentRepository = contentRepository;
         }
 
-        public bool PostContent(string contentType, string contentBody, ClaimsPrincipal user)
+        public string PostContent(string contentType, string contentBody, ClaimsPrincipal user)
         {
             return _contentRepository.PostContent(contentType, contentBody, user);
         }
