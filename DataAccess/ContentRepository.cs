@@ -136,6 +136,8 @@ namespace FreeCMS.DataAccess
                     contentDTO.RemoveRange(pageSize, contentDTO.Count-pageSize);
                 }
 
+                AddContentIdToTheField(contentDTO);
+
                 return contentDTO;
             }
 
@@ -157,6 +159,8 @@ namespace FreeCMS.DataAccess
                 orderedContentDTO.RemoveRange(pageSize, orderedContentDTO.Count - pageSize);
             }
 
+            AddContentIdToTheField(orderedContentDTO);
+
             return orderedContentDTO;
         }
 
@@ -173,7 +177,7 @@ namespace FreeCMS.DataAccess
             else 
             {
                 dbconnection.Execute($"DELETE FROM contents WHERE \"ContentId\" = {contentId}");
-                return "Item deleted successfuly.";
+                return "Content deleted successfuly.";
             }
         }
 
@@ -200,6 +204,32 @@ namespace FreeCMS.DataAccess
             {
                 dbconnection.Execute($"UPDATE contents SET ContentBody = '{newContentBody}' WHERE ContentId = {contentId}");
                 return @"Content updated successfuly.";
+            }
+        }
+
+        private void AddContentIdToTheField(List<ContentUnitDTO_output> contentDTO) 
+        {
+            //add item id to field
+            Dictionary<string, object> valueDict = new();
+            Dictionary<string, object> finalDict = new();
+
+            for (int i = 0; i < contentDTO.Count; i++)
+            {
+                valueDict.Add("content_id", contentDTO[i].ContentId);
+
+                foreach (var item in contentDTO[i].ContentBody)
+                {
+                    valueDict.Add(item.Key, item.Value);
+                }
+
+                contentDTO[i].ContentBody.Clear();
+
+                foreach (var item in valueDict)
+                {
+                    contentDTO[i].ContentBody.Add(item.Key, item.Value);
+                }
+
+                valueDict.Clear();
             }
         }
     }
