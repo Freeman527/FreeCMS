@@ -1,5 +1,15 @@
+## Note: No longer updated/supported. I keep for archive purposes at the moment.
+
+#### I don't have any motivation to continue this project. 
+#### Feel free to fork if it'll matter.
+
+## Why website that for testing is not working ?
+#### I was using this website for my personal portfolio, after that I decided to shut down because of it is not personally necessary anymore.
+#### I'll be updated the link with new source for testing soon.
+
 # FreeCMS
-### It's a headless content management system. 
+
+### FreeCMS is a simple headless content management system. 
 ### Please follow the instructions for correct operation.
 
 ##### The source code will not work unless you create a database that fits in the project's needs. You can find database creation codes which required to create the database in `tables.sql`. Also you can browse and test the project from my website, which is built on the existing database.
