@@ -17,7 +17,7 @@
 Website for testing: http://erayertas.com/freecms
 
 ## Requirements
-* .NET SDK
+* .NET SDK (5.0)
 * Microsoft SQL Server
 
 ## Beginning
